@@ -12,13 +12,9 @@ func read_input(list1: Array@, list2: Array@)
         [str,rc] := std::read_file_str(&fp,buf);
 
         split := std::split_str(str,"   ");
+        strings := recast_arr(const string,std::array_buffer(&split));
 
-        if std::count_array(&split) != 2
-        {
-            std::crash_and_burn("invalid input");
-        }
-
-        strings := cast(string@,std::array_data(&split));
+        std::assert(strings.len == 2);
 
         std::push_u64(list1,std::parse_u64(strings[0]));
         std::push_u64(list2,std::parse_u64(strings[1]));
@@ -49,21 +45,17 @@ func main() s32
 
     table := std::make_hash_table(sizeof_type(u64),sizeof_type(u64),&hash_u64);
 
-    arr1 := cast(u64@,std::array_data(&list1));
-    arr2 := cast(u64@,std::array_data(&list2));
+    arr1 := recast_arr(u64,std::array_buffer(&list1));
+    arr2 := recast_arr(u64,std::array_buffer(&list2));
 
-    size := std::count_array(&list1);
-
-    for i in 0 < size
+    for v in arr2
     {
-        v2 := arr2[i];
-
-        value := cast(u64@,std::hash_table_lookup(&table,&v2));
+        value := cast(u64@,std::hash_table_lookup(&table,&v));
 
         if(!value)
         {
             insert: u64 = 0;
-            value = cast(u64@,std::hash_table_add(&table,&v2,&insert));
+            value = cast(u64@,std::hash_table_add(&table,&v,&insert));
         }
 
         @value += 1;
@@ -72,7 +64,7 @@ func main() s32
     total_diff: s64 = 0;
     mul_sum: s64 = 0;
 
-    for i in 0 < size
+    for i in 0 < arr1.len
     {
         v1 := arr1[i];
         v2 := arr2[i];

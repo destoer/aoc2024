@@ -1,11 +1,3 @@
-
-
-struct Ctx
-{
-    safe: u32;
-    safe_damp: u32;
-}
-
 func do_cmp(last: u64, cur: u64) [bool, bool]
 {
     min: const u64 = 1;
@@ -32,10 +24,7 @@ func do_round(cur: u64, last: u64@, old_sign: bool@) bool
 
 func parse_line(ints: const u64[]) bool
 {
-    if ints.len < 3
-    {
-        std::crash_and_burn("Levels too short!");
-    }
+    std::assert(ints.len > 3);
 
     [old_sign,first_in_range] := do_cmp(ints[0],ints[1]);
     last: u64 = ints[1];
@@ -56,6 +45,19 @@ func parse_line(ints: const u64[]) bool
     return true;
 }
 
+func copy_and_exclude(base: const u64[], out: u64[], ignore: usize)
+{
+    filled: usize = 0;
+    for i in 0 < base.len
+    {
+        if ignore != i
+        {
+            out[filled] = base[i];
+            filled += 1;
+        }
+    }
+}
+
 func main() s32
 {
     fp := std::open_file_or_panic("input/day2.txt",file_mode::read,file_opt::open);
@@ -72,18 +74,12 @@ func main() s32
 
         split := std::split_str(str," ");
 
-        strings_data := cast(string@,std::array_data(&split));
-        strings_size := std::count_array(&split);
-        strings: const string[] = {strings_data, strings_size}; 
+        strings := recast_arr(const string,std::array_buffer(&split));
 
-        if strings.len == 0
-        {
-            std::crash_and_burn("empty line");
-        }
+        std::assert(strings.len != 0);
 
-        ints_data := cast(u64@,std::alloc_heap_panic(&global_heap,strings.len,sizeof_type(u64)));
-
-        ints: u64[] = {ints_data,strings.len}; 
+        ints_data := std::alloc_heap_panic(&global_heap,strings.len,sizeof_type(u64));
+        ints: u64[] = {cast(u64@,ints_data),strings.len}; 
 
         for [string, i] in strings
         {
@@ -97,26 +93,16 @@ func main() s32
 
         else
         {
-            fails: u32 = 0;
-
-            ints_stripped_data := cast(u64@,std::alloc_heap_panic(&global_heap,strings.len - 1,sizeof_type(u64)));
-
-            ints_stripped: u64[] = {ints_stripped_data,strings.len - 1}; 
+            ints_stripped_len := ints.len - 1;
+            ints_stripped_data := std::alloc_heap_panic(&global_heap,ints_stripped_len,sizeof_type(u64));
+            ints_stripped: u64[] = { cast(u64@,ints_stripped_data),ints_stripped_len}; 
 
             safe := false;
+            fails: u32 = 0;
 
             while(!safe && fails != ints.len)
             {
-                filled: usize = 0;
-                for i in 0 < ints.len
-                {
-                    if fails != i
-                    {
-                        ints_stripped[filled] = ints[i];
-                        filled += 1;
-                    }
-                }
-
+                copy_and_exclude(ints,ints_stripped,fails);
                 safe = parse_line(ints_stripped);
                 fails += 1;
             }
