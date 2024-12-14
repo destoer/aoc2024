@@ -20,11 +20,8 @@ func read_input(list1: Array@, list2: Array@)
 
         strings := cast(string@,std::array_data(&split));
 
-        [value,str] := std::parse_value(strings[0]);
-        std::push_array(list1,&value.v);
-
-        [value,str] = std::parse_value(strings[1]);
-        std::push_array(list2,&value.v);
+        std::push_u64(list1,std::parse_u64(strings[0]));
+        std::push_u64(list2,std::parse_u64(strings[1]));
 
         std::destroy_array(&split);
     }
@@ -32,28 +29,28 @@ func read_input(list1: Array@, list2: Array@)
     std::close_file(&fp);
 }
 
-func sort_least_u32(v1_ptr: const byte@, v2_ptr: const byte@) bool
+func sort_least_u64(v1_ptr: const byte@, v2_ptr: const byte@) bool
 {
-    v1 := @cast(u32@,v1_ptr);
-    v2 := @cast(u32@,v2_ptr);
+    v1 := @cast(u64@,v1_ptr);
+    v2 := @cast(u64@,v2_ptr);
 
     return v1 > v2;
 }
 
 func main() s32
 {
-    list1 := std::make_array(sizeof_type(u32));
-    list2 := std::make_array(sizeof_type(u32));
+    list1 := std::make_array(sizeof_type(u64));
+    list2 := std::make_array(sizeof_type(u64));
     
     read_input(&list1,&list2);
 
-    std::sort(&list1,&sort_least_u32);
-    std::sort(&list2,&sort_least_u32);
+    std::sort(&list1,&sort_least_u64);
+    std::sort(&list2,&sort_least_u64);
 
-    table := std::make_hash_table(sizeof_type(u32),sizeof_type(u32),&hash_u32);
+    table := std::make_hash_table(sizeof_type(u64),sizeof_type(u64),&hash_u64);
 
-    arr1 := cast(u32@,std::array_data(&list1));
-    arr2 := cast(u32@,std::array_data(&list2));
+    arr1 := cast(u64@,std::array_data(&list1));
+    arr2 := cast(u64@,std::array_data(&list2));
 
     size := std::count_array(&list1);
 
@@ -61,12 +58,12 @@ func main() s32
     {
         v2 := arr2[i];
 
-        value := cast(u32@,std::hash_table_lookup(&table,&v2));
+        value := cast(u64@,std::hash_table_lookup(&table,&v2));
 
         if(!value)
         {
-            insert: u32 = 0;
-            value = cast(u32@,std::hash_table_add(&table,&v2,&insert));
+            insert: u64 = 0;
+            value = cast(u64@,std::hash_table_add(&table,&v2,&insert));
         }
 
         @value += 1;
@@ -82,7 +79,7 @@ func main() s32
 
         total_diff += std::abs(v1 - v2);
 
-        value := cast(u32@,std::hash_table_lookup(&table,&v1));
+        value := cast(u64@,std::hash_table_lookup(&table,&v1));
 
         if(value)
         {

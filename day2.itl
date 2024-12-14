@@ -1,0 +1,140 @@
+
+
+struct Ctx
+{
+    safe: u32;
+    safe_damp: u32;
+}
+
+func do_cmp(last: u64, cur: u64) [bool, bool]
+{
+    min: const u64 = 1;
+    max: const u64 = 3;
+
+    diff: s64 = last - cur;
+    sign := diff < 0;
+    in_range := std::in_range_u64(std::abs(diff),min,max);
+
+    return sign,in_range;
+}
+
+func do_round(cur: u64, last: u64@, old_sign: bool@) bool
+{
+    [cur_sign,in_range] := do_cmp(@last,cur);
+    diff_sign := cur_sign != @old_sign;
+
+    @old_sign = cur_sign;
+    @last = cur;
+
+    return !in_range || diff_sign;
+}
+
+
+func parse_line(ints: const u64[]) bool
+{
+    if ints.len < 3
+    {
+        std::crash_and_burn("Levels too short!");
+    }
+
+    [old_sign,first_in_range] := do_cmp(ints[0],ints[1]);
+    last: u64 = ints[1];
+    
+    if !first_in_range
+    {
+        return false;
+    }
+
+    for i in 2 < ints.len
+    {
+        if(do_round(ints[i],&last,&old_sign))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+func main() s32
+{
+    fp := std::open_file_or_panic("input/day2.txt",file_mode::read,file_opt::open);
+
+    buf : c8[256];
+    rc := file_read_res::success;
+
+    safe_count: u32 = 0;
+    safe_damp_count: u32 = 0;
+
+    while(rc == file_read_res::success)
+    {
+        [str,rc] := std::read_file_str(&fp,buf);
+
+        split := std::split_str(str," ");
+
+        strings_data := cast(string@,std::array_data(&split));
+        strings_size := std::count_array(&split);
+        strings: const string[] = {strings_data, strings_size}; 
+
+        if strings.len == 0
+        {
+            std::crash_and_burn("empty line");
+        }
+
+        ints_data := cast(u64@,std::alloc_heap_panic(&global_heap,strings.len,sizeof_type(u64)));
+
+        ints: u64[] = {ints_data,strings.len}; 
+
+        for [string, i] in strings
+        {
+            ints[i] = std::parse_u64(string);
+        }
+
+        if parse_line(ints)
+        {
+            safe_count += 1;
+        }
+
+        else
+        {
+            fails: u32 = 0;
+
+            ints_stripped_data := cast(u64@,std::alloc_heap_panic(&global_heap,strings.len - 1,sizeof_type(u64)));
+
+            ints_stripped: u64[] = {ints_stripped_data,strings.len - 1}; 
+
+            safe := false;
+
+            while(!safe && fails != ints.len)
+            {
+                filled: usize = 0;
+                for i in 0 < ints.len
+                {
+                    if fails != i
+                    {
+                        ints_stripped[filled] = ints[i];
+                        filled += 1;
+                    }
+                }
+
+                safe = parse_line(ints_stripped);
+                fails += 1;
+            }
+
+            if safe
+            {
+                safe_damp_count += 1;
+            }
+
+            std::free_heap(&global_heap,cast(byte@@,&ints_stripped.data));
+        }
+
+        std::free_heap(&global_heap,cast(byte@@,&ints.data));
+    }
+
+    std::println("part1: {}",safe_count);
+    std::println("part2: {}",safe_damp_count + safe_count);
+
+    std::close_file(&fp);
+    return 0;
+}
