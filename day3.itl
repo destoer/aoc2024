@@ -112,7 +112,7 @@ func main() s32
     std::println("part1 {}",sum_all);
     std::println("part2 {}",sum_trigger);
 
-    free_heap(&global_heap,input.data);
+    std::free_heap(&global_heap,cast(byte@@,&input.data));
 
     return 0;
 }
