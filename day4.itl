@@ -1,0 +1,77 @@
+import "grid"
+
+func scan_grid(grid: const Grid@,pos: Vec2I, dir: const Vec2I, scan: const string) bool
+{
+    for scanned in 0 < scan.len
+    {
+        if grid_data(grid,pos) != scan[scanned]
+        {
+            return false;
+        }
+
+        pos = std::vec2i_add(pos,dir);
+    }
+
+    return true;
+}
+
+func main() s32 
+{
+    grid := read_grid("input/day4.txt");
+
+    std::println("{} {}",grid.width,grid.height);
+
+
+    north: const Vec2I = {0,-1};
+    north_east: const Vec2I = {1,-1};
+    east: const Vec2I = {1,0};
+    south_east: const Vec2I = {1,1};
+    south: const Vec2I = {0,1};
+    south_west: const Vec2I = {-1,1};
+    west: const Vec2I = {-1,0};
+    north_west: const Vec2I = {-1,-1};
+    
+
+    found_xmas: u64 = 0;
+    found_mas: u64 = 0;
+
+    scan_xmas_dirs: Vec2I[?] = {north,north_east,east,south_east,
+        south,south_west,west,north_west};
+
+    for y in 0 < grid.height
+    {
+        for x in 0 < grid.width
+        {
+            pos: const Vec2I = {x,y};
+            cur := grid_data(&grid,pos);
+
+            if cur == 'X'
+            {
+                for dir in scan_xmas_dirs 
+                {
+                    found_xmas += cast(u64,scan_grid(&grid,pos,dir,"XMAS"));
+                }
+            }
+
+            else if cur == 'A'
+            { 
+                tl := grid_data(&grid,std::vec2i_add(pos,north_west));
+                tr := grid_data(&grid,std::vec2i_add(pos,north_east));
+
+                bl := grid_data(&grid,std::vec2i_add(pos,south_west));
+                br := grid_data(&grid,std::vec2i_add(pos,south_east));
+
+                l1 := (tl == 'S' && br == 'M') || (tl == 'M' && br == 'S');
+                l2 := (tr == 'S' && bl == 'M') || (tr == 'M' && bl == 'S');
+
+                found_mas += cast(u64,l1 && l2);
+            }
+        }
+    }
+
+    std::println("part1: {}",found_xmas);
+    std::println("part2: {}",found_mas);
+
+    std::destroy_array(&grid.buffer);
+    return 0;
+}

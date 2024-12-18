@@ -1,0 +1,47 @@
+
+struct Grid
+{
+    buffer: Array;
+    width: s64;
+    height: s64;
+}
+
+func read_grid(name: const string) Grid
+{
+    grid: Grid;
+
+    fp := std::open_file_or_panic(name,file_mode::read,file_opt::open);
+    grid.buffer = std::make_array(sizeof_type(c8));
+
+    buf : c8[256];
+    rc := file_read_res::success;
+
+    while(rc == file_read_res::success)
+    {
+        [str,rc] := std::read_file_line(&fp,buf);
+        std::push_buffer(&grid.buffer,str.data,str.len);
+        grid.width = str.len;
+        grid.height += 1;
+    }
+
+    std::close_file(&fp);
+
+    return grid;
+}
+
+
+func in_grid_bounds(grid: const Grid@, pos: Vec2I) bool
+{
+    return std::in_range_s64(pos.x,0,grid.width - 1) && std::in_range_s64(pos.y,0,grid.height - 1);
+}
+
+
+func grid_data(grid: const Grid@,pos: Vec2I) c8
+{
+    if !in_grid_bounds(grid,pos)
+    {
+        return '\0';
+    }
+
+    return grid.buffer.buf[(pos.y * grid.width) + pos.x];
+}
