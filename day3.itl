@@ -1,0 +1,117 @@
+struct Parser
+{
+    str: const string;
+    offset: usize;
+}
+
+func consume_str(parser: Parser@, cmp: const string) bool
+{
+    str := parser.str;
+
+    if parser.offset + cmp.len >= str.len
+    {
+        return false;
+    }
+
+    if std::str_equal(str[parser.offset: parser.offset + cmp.len],cmp)
+    {
+        parser.offset += cmp.len;
+        return true;
+    }
+
+    return false;
+}
+
+func consume(parser: Parser@, char: c8) bool
+{
+    str := parser.str;
+
+    if parser.offset >= str.len
+    {
+        return false;
+    }
+
+    if str[parser.offset] == char
+    {
+        parser.offset += 1;
+        return true;
+    }
+
+    return false;
+}
+
+func parse_int(parser: Parser@) u64
+{
+    str := parser.str;
+    [value,scan] := std::parse_value(str[parser.offset:]);
+    parser.offset = scan.data - str.data;
+
+    return value.v;
+}
+
+func main() s32 
+{
+    [input, err] := std::read_string("input/day3.txt");
+
+    if err
+    {
+        std::println("could not read day 3 input");
+        return 1;
+    }
+
+
+    search_mul := "mul(";
+    search_dont := "don't()";
+    search_do := "do()";
+
+    sum_all: u64 = 0;
+    sum_trigger: u64 = 0;
+    enable := true;
+
+    parser: Parser = {input,0};
+
+    while parser.offset <= parser.str.len
+    {
+        if consume_str(&parser,search_mul)
+        {
+
+            v1 := parse_int(&parser);
+
+            if consume(&parser,',')
+            {
+                v2 := parse_int(&parser);
+    
+                if consume(&parser,')')
+                {
+                    res := v1 * v2;
+                    sum_all += res;
+
+                    if enable
+                    {
+                        sum_trigger += res;
+                    }
+                }
+            }
+        }
+
+        else if consume_str(&parser,search_do)
+        {
+            enable = true;
+        }
+
+        else if consume_str(&parser,search_dont)
+        {
+            enable = false;
+        }
+
+        else
+        {
+            parser.offset += 1;
+        }
+    }
+
+    std::println("part1 {}",sum_all);
+    std::println("part2 {}",sum_trigger);
+
+    return 0;
+}

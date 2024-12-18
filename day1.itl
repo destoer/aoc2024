@@ -9,7 +9,7 @@ func read_input(list1: Array@, list2: Array@)
 
     while(rc == file_read_res::success)
     {
-        [str,rc] := std::read_file_str(&fp,buf);
+        [str,rc] := std::read_file_line(&fp,buf);
 
         split := std::split_str(str,"   ");
         strings := recast_arr(const string,std::array_buffer(&split));
