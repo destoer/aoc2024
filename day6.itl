@@ -1,6 +1,6 @@
 import "grid"
 
-enum direction : Vec2I
+enum direction : std::Vec2I
 {
     up = {0,-1},
     right = {1,0},
@@ -8,7 +8,7 @@ enum direction : Vec2I
     left = {-1,0},
 }
 
-func sim_guard(grid: Grid@, pos: Vec2I, seen: u8[]) [bool,u32]
+func sim_guard(grid: Grid@, pos: std::Vec2I, seen: u8[]) [bool,u32]
 {
     // reset our bitset of travelled dirs
     for @v in seen
@@ -24,10 +24,7 @@ func sim_guard(grid: Grid@, pos: Vec2I, seen: u8[]) [bool,u32]
         start := (pos.y * grid.width) + pos.x;
         flags := &seen[start];
 
-        unique += cast(u32,@flags == 0);
-
-        dir_idx := cast(u32,dir);
-        mask := 1 << dir_idx;
+        mask := 1 << cast(u32,dir);
 
         // hit same direction twice we have looped
         if (@flags & mask) != 0
@@ -35,22 +32,20 @@ func sim_guard(grid: Grid@, pos: Vec2I, seen: u8[]) [bool,u32]
             return true, unique;
         }
 
+        unique += cast(u32,@flags == 0);
         @flags |= mask;
 
-        next_pos: const Vec2I = {pos.x + dir.x,pos.y + dir.y};
+        next_pos: const std::Vec2I = {pos.x + dir.x,pos.y + dir.y};
 
         if !in_grid_bounds(grid,next_pos)
         {
             return false, unique;
         }
 
-        next := (next_pos.y * grid.width) + next_pos.x;
-
         // Our turn can be invalid
-        while grid.buffer.buf[next] != '.'
+        while grid.buffer.buf[((pos.y + dir.y) * grid.width) + pos.x + dir.x] != '.'
         {
             dir = cast(direction,(cast(u32,dir) + 1) & 3);
-            next = ((pos.y + dir.y) * grid.width) + (pos.x + dir.x);
         }
 
         pos.x += dir.x;
@@ -66,7 +61,7 @@ func main() s32
 
     buffer := grid.buffer.buf;
 
-    pos: Vec2I = {?};
+    pos: std::Vec2I = {?};
 
     // Find the starting posistion
     for [v,i] in buffer 

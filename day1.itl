@@ -1,13 +1,13 @@
 
 
-func read_input(list1: Array@, list2: Array@)
+func read_input(list1: std::Array@, list2: std::Array@)
 {
-    fp := std::open_file_or_panic("input/day1.txt",file_mode::read,file_opt::open);
+    fp := std::open_file_or_panic("input/day1.txt",std::file_mode::read,std::file_opt::open);
 
     buf : c8[256];
-    rc := file_read_res::success;
+    rc := std::file_read_res::success;
 
-    while(rc == file_read_res::success)
+    while(rc == std::file_read_res::success)
     {
         [str,rc] := std::read_file_line(&fp,buf);
 
@@ -43,7 +43,7 @@ func main() s32
     std::sort(&list1,&sort_least_u64);
     std::sort(&list2,&sort_least_u64);
 
-    table := std::make_hash_table(sizeof_type(u64),sizeof_type(u64),&hash_u64);
+    table := std::make_hash_table(sizeof_type(u64),sizeof_type(u64),&std::hash_u64);
 
     arr1 := recast_arr(u64,std::array_buffer(&list1));
     arr2 := recast_arr(u64,std::array_buffer(&list2));

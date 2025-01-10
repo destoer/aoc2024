@@ -60,15 +60,15 @@ func copy_and_exclude(base: const u64[], out: u64[], ignore: usize)
 
 func main() s32
 {
-    fp := std::open_file_or_panic("input/day2.txt",file_mode::read,file_opt::open);
+    fp := std::open_file_or_panic("input/day2.txt",std::file_mode::read,std::file_opt::open);
 
     buf : c8[256];
-    rc := file_read_res::success;
+    rc := std::file_read_res::success;
 
     safe_count: u32 = 0;
     safe_damp_count: u32 = 0;
 
-    while(rc == file_read_res::success)
+    while(rc == std::file_read_res::success)
     {
         [str,rc] := std::read_file_line(&fp,buf);
 
